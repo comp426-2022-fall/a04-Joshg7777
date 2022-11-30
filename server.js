@@ -1,73 +1,53 @@
-#!/usr/bin/env node
-
-// import roll function
+import minimist from "minimist";
+import express from "express";
 import {roll} from "./lib/roll.js";
 
-// require express
-import express from 'express';
-const app = express();
-
-// require minimist and process arguments
-import minimist from 'minimist';
 const args = minimist(process.argv.slice(2));
-
-// set port to 5000 if no argument is given
-const port = args.port || 5000;
-
-// parse arguments as url encoded
+const app = express();
 app.use(express.urlencoded({extended: true}));
 
-// check endpoint
-app.get('/app/', (req, res) => {
-    res.status(200).send('200 OK');
-})
+let port = 5000;
 
-// default endpoint
+if(args.port){
+	port = args.port;
+}
+
+app.get('/app/', (req, res) => {
+	res.status(200);
+	res.send('200 OK');
+});
+
 app.get('/app/roll/', (req, res) => {
-    let sides = 6;
-    let dice = 2;
-    let rolls = 1;
-    res.status(200).send(roll(sides, dice, rolls));
-})
+	res.send(roll(6,2,1));
+	res.status(200);
+});
 
 app.post('/app/roll/', (req, res) => {
-    let sides = 6 || parseInt(req.body.sides);
-    let dice = 2 || parseInt(req.body.dice);
-    let rolls = 1 || parseInt(req.body.rolls);
-    res.status(200).send(roll(sides, dice, rolls));
-})
+	res.send(roll(parseInt(req.body.sides), parseInt(req.body.dice), parseInt(req.body.rolls)));
+	res.status(200);
+});
 
-// endpoint for sides
+
 app.get('/app/roll/:sides/', (req, res) => {
-    let sides = parseInt(req.params.sides);
-    let dice = 2;
-    let rolls = 1;
-    res.status(200).send(roll(sides, dice, rolls));
-})
+	res.send(roll(parseInt(req.params.sides), 2, 1));
+	res.status(200);
+});
 
-// endpoint for sides and dice
 app.get('/app/roll/:sides/:dice/', (req, res) => {
-    let sides = parseInt(req.params.sides);
-    let dice = parseInt(req.params.dice);
-    let rolls = 1;
-    res.status(200).send(roll(sides, dice, rolls));
-})
+	res.send(roll(parseInt(req.params.sides), parseInt(req.params.dice), 1));
+	res.status(200);
+});
 
-// endpoint for sides, dice, and rolls
-app.get('/app/roll/:sides/:dice/:rolls/', (req, res) => {
-    let sides = parseInt(req.params.sides);
-    let dice = parseInt(req.params.dice);
-    let rolls = parseInt(req.params.rolls);
-    res.status(200).send(roll(sides, dice, rolls));
-})
+app.get('/app/roll/:sides/:dice/:rolls?', (req, res) => {
+	res.send(roll(parseInt(req.params.sides), parseInt(req.params.dice), parseInt(req.params.rolls)));
+	res.status(200);
+});
 
-// 404 error
-app.get('*', (req, res) => {
-    console.error('error encountered');
-    res.status(404).send('404 NOT FOUND');
-})
+app.use((req, res) => {
+	res.send("404 NOT FOUND");
+	res.status(404);
+});
 
-// start server
 app.listen(port, () => {
-    console.log(`Server started on port ${port}\n`)
+	console.log("Server listening on port " + port);
 });
